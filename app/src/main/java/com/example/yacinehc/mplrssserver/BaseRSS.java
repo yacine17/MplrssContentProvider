@@ -12,13 +12,15 @@ public class BaseRSS extends SQLiteOpenHelper {
     public final static String LINK_COLUMN = "link";
     public final static String TITLE_COLUMN = "title";
     public final static String DESCRIPTION_COLUMN = "description";
-
     public final static String CREATE_RSS = "create table " + RSS_TABLE + "(" +
             LINK_COLUMN + " string primary key, " +
             TITLE_COLUMN + " string, " +
             DESCRIPTION_COLUMN + " string);";
-
     private static BaseRSS baseRSS;
+
+    private BaseRSS(Context context) {
+        super(context, DB_NAME, null, VERSION);
+    }
 
     public static BaseRSS getInstance(Context context) {
         if (baseRSS == null) {
@@ -27,10 +29,6 @@ public class BaseRSS extends SQLiteOpenHelper {
         return baseRSS;
     }
 
-    private BaseRSS(Context context) {
-        super(context, DB_NAME, null, VERSION);
-
-    }
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_RSS);

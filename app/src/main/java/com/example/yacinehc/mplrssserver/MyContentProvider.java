@@ -10,8 +10,6 @@ import android.net.Uri;
 
 public class MyContentProvider extends ContentProvider {
     private final static String authority = "fr.diderot.yacinehc.mplrssserver";
-    private BaseRSS baseRSS;
-
     private final static UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
     private final static int CODE_RSS = 1;
 
@@ -19,12 +17,12 @@ public class MyContentProvider extends ContentProvider {
         matcher.addURI(authority, "rss", CODE_RSS);
     }
 
-    public MyContentProvider() {
+    private BaseRSS baseRSS;
 
+    public MyContentProvider() {
     }
 
     @Override
-
     public String getType(Uri uri) {
         // TODO: Implement this to handle requests for the MIME type of the data
         // at the given URI.
@@ -45,9 +43,7 @@ public class MyContentProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
-
         Uri.Builder builder = (new Uri.Builder()).authority(authority).appendPath(path);
-
         return ContentUris.appendId(builder, id).build();
     }
 
@@ -65,8 +61,8 @@ public class MyContentProvider extends ContentProvider {
         Cursor cursor;
         switch (code) {
             case CODE_RSS:
-                cursor = db.query(BaseRSS.RSS_TABLE, null, null, null,
-                        null, null, null);
+                cursor = db.query(BaseRSS.RSS_TABLE, projection, selection, selectionArgs,
+                        null, null, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
@@ -83,7 +79,13 @@ public class MyContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        throw new UnsupportedOperationException("Not yet implemented");
-
+        SQLiteDatabase db = baseRSS.getWritableDatabase();
+        int code = matcher.match(uri);
+        switch (code) {
+            case CODE_RSS:
+                return db.delete(BaseRSS.RSS_TABLE, selection, selectionArgs);
+            default:
+                throw new UnsupportedOperationException("Not yet implemented");
+        }
     }
 }

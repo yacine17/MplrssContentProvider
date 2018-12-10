@@ -13,7 +13,7 @@
             android:name=".MyContentProvider"
             android:authorities="fr.diderot.yacinehc.mplrssserver"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true"/>
     </application>
 
 </manifest>
