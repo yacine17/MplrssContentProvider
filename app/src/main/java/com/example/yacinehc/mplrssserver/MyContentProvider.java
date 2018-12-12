@@ -5,10 +5,13 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 public class MyContentProvider extends ContentProvider {
+    private static final String LOG = "MyContentProvider";
     private final static String authority = "fr.diderot.yacinehc.mplrssserver";
     private final static UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
     private final static int CODE_RSS = 1;
@@ -33,16 +36,22 @@ public class MyContentProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = baseRSS.getWritableDatabase();
         int code = matcher.match(uri);
-        String path;
+        String path=null;
         long id = -1;
-        switch (code) {
-            case CODE_RSS:
-                id = db.insertOrThrow(BaseRSS.RSS_TABLE, null, values);
-                path = "rss";
-                break;
-            default:
-                throw new UnsupportedOperationException("Not yet implemented");
+        try {
+            switch (code) {
+                case CODE_RSS:
+                    id = db.insertOrThrow(BaseRSS.RSS_TABLE, null, values);
+                    path = "rss";
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Not yet implemented");
+            }
         }
+        catch (SQLException e){
+            Log.d(LOG,"Erreur SQL",e);
+        }
+
         Uri.Builder builder = (new Uri.Builder()).authority(authority).appendPath(path);
         return ContentUris.appendId(builder, id).build();
     }
@@ -58,7 +67,8 @@ public class MyContentProvider extends ContentProvider {
                         String[] selectionArgs, String sortOrder) {
         SQLiteDatabase db = baseRSS.getReadableDatabase();
         int code = matcher.match(uri);
-        Cursor cursor;
+        Cursor cursor=null;
+        try{
         switch (code) {
             case CODE_RSS:
                 cursor = db.query(BaseRSS.RSS_TABLE, projection, selection, selectionArgs,
@@ -66,6 +76,12 @@ public class MyContentProvider extends ContentProvider {
                 break;
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
+            }
+
+
+        }
+        catch (SQLException e){
+            Log.d(LOG,"Erreur Requete "+e.getMessage());
         }
         return cursor;
     }
