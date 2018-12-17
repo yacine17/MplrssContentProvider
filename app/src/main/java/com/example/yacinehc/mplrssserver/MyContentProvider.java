@@ -5,10 +5,13 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 public class MyContentProvider extends ContentProvider {
+    private static final String LOG = "MyContentProvider";
     private final static String authority = "fr.diderot.yacinehc.mplrssserver";
     private final static UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
     private final static int CODE_RSS = 1;
@@ -72,19 +75,25 @@ public class MyContentProvider extends ContentProvider {
                         String[] selectionArgs, String sortOrder) {
         SQLiteDatabase db = baseRSS.getReadableDatabase();
         int code = matcher.match(uri);
-        Cursor cursor;
-        switch (code) {
-            case CODE_RSS:
-                cursor = db.query(BaseRSS.RSS_TABLE, projection, selection, selectionArgs,
-                        null, null, sortOrder);
-                break;
+        Cursor cursor = null;
+        try {
+            switch (code) {
+                case CODE_RSS:
+                    cursor = db.query(BaseRSS.RSS_TABLE, projection, selection, selectionArgs,
+                            null, null, sortOrder);
+                    break;
 
-            case CODE_ITEM:
-                cursor = db.query(BaseRSS.ITEMS_TABLE, projection, selection, selectionArgs,
-                        null, null, sortOrder);
-                break;
-            default:
-                throw new UnsupportedOperationException("Not yet implemented");
+                case CODE_ITEM:
+                    cursor = db.query(BaseRSS.ITEMS_TABLE, projection, selection, selectionArgs,
+                            null, null, sortOrder);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Not yet implemented");
+            }
+
+
+        } catch (SQLException e) {
+            Log.d(LOG, "Erreur Requete " + e.getMessage());
         }
         return cursor;
     }
