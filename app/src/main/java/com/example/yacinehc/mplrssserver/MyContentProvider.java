@@ -12,9 +12,11 @@ public class MyContentProvider extends ContentProvider {
     private final static String authority = "fr.diderot.yacinehc.mplrssserver";
     private final static UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
     private final static int CODE_RSS = 1;
+    private final static int CODE_ITEM = 2;
 
     static {
         matcher.addURI(authority, "rss", CODE_RSS);
+        matcher.addURI(authority, "items", CODE_ITEM);
     }
 
     private BaseRSS baseRSS;
@@ -33,12 +35,24 @@ public class MyContentProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = baseRSS.getWritableDatabase();
         int code = matcher.match(uri);
-        String path;
+        String path = "";
         long id = -1;
         switch (code) {
             case CODE_RSS:
-                id = db.insertOrThrow(BaseRSS.RSS_TABLE, null, values);
-                path = "rss";
+                try {
+                    id = db.insertOrThrow(BaseRSS.RSS_TABLE, null, values);
+                    path = "rss";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case CODE_ITEM:
+                try {
+                    id = db.insertOrThrow(BaseRSS.ITEMS_TABLE, null, values);
+                    path = "items";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
@@ -64,6 +78,11 @@ public class MyContentProvider extends ContentProvider {
                 cursor = db.query(BaseRSS.RSS_TABLE, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
+
+            case CODE_ITEM:
+                cursor = db.query(BaseRSS.ITEMS_TABLE, projection, selection, selectionArgs,
+                        null, null, sortOrder);
+                break;
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
@@ -84,6 +103,8 @@ public class MyContentProvider extends ContentProvider {
         switch (code) {
             case CODE_RSS:
                 return db.delete(BaseRSS.RSS_TABLE, selection, selectionArgs);
+            case CODE_ITEM:
+                return db.delete(BaseRSS.ITEMS_TABLE, selection, selectionArgs);
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
